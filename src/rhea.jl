@@ -37,7 +37,7 @@ function get_biochem_rxns(csym, csyms...)
     end
 
     input_url = "$RHEA_URL/?query=$(chebi_ids)&columns=rhea-id,equation,chebi-id&format=tsv"
-    res = HTTP.get(input_url)
+    res = pubchem_get(input_url)
     if res.status == 200
         return CSV.read(IOBuffer(res.body), DataFrame)
     else

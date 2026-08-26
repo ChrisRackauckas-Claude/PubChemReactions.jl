@@ -4,7 +4,7 @@
 Perform a GET request with retries enabled for transient PubChem/Rhea network failures.
 """
 function pubchem_get(url; kwargs...)
-    return HTTP.get(url; retry = true, retries = 3, readtimeout = 120, kwargs...)
+    return HTTP.get(url; retry = true, retries = 3, kwargs...)
 end
 
 pug_url_name(cname) = joinpath(PUG_URL, "compound/name/$(cname)/record/JSON")
