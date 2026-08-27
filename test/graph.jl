@@ -8,14 +8,7 @@ using PubChemReactions: @species
 
 @variables t
 
-C6H12O6 = PubChemReactions.search_compound("glucose")
-H2O = PubChemReactions.search_compound("water")
-
-df = PubChemReactions.get_biochem_rxns(C6H12O6, H2O)
-eqs = df[!, :Equation]
-eq = first(eqs) # I happen to know this one has no prefixed stoich data
-
-h2o = PubChemReactions.search_compound("water")
+@species h2o(t) [cid = 962, save = true, load = true]
 @test PubChemReactions.isspecies(h2o)
 @test PubChemReactions.get_graph(h2o) isa PubChemReactions.AtomBondGraph
 

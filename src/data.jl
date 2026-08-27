@@ -1,3 +1,12 @@
+"""
+    pubchem_get(url; kwargs...)
+
+Perform a GET request with retries enabled for transient PubChem/Rhea network failures.
+"""
+function pubchem_get(url; kwargs...)
+    return HTTP.get(url; retry = true, retries = 3, kwargs...)
+end
+
 pug_url_name(cname) = joinpath(PUG_URL, "compound/name/$(cname)/record/JSON")
 pug_view_url_name(cname) = joinpath(PUG_VIEW_URL, "compound/name/$(cname)/JSON")
 
@@ -9,7 +18,7 @@ function get_cids_from_cname(cname::AbstractString; verbose = false)
     cname = HTTP.escapeuri(cname)
     input_url = "$(PUG_URL)/compound/name/$(cname)/cids/JSON"
     verbose && @info input_url
-    res = HTTP.get(input_url)
+    res = pubchem_get(input_url)
     if res.status == 200
         return JSON3.read(String(res.body))::JSON3.Object
     else
@@ -27,7 +36,7 @@ function get_json_from_cname(cname::AbstractString; verbose = false)
     cname = HTTP.escapeuri(cname)
     input_url = "$(PUG_URL)/compound/name/$(cname)/record/JSON/" #?record_type=3d"
     verbose && @info input_url
-    res = HTTP.get(input_url)
+    res = pubchem_get(input_url)
     if res.status == 200
         return JSON3.read(String(res.body))
     else
@@ -59,12 +68,12 @@ end
 
 function get_json_and_view(input_url; verbose = false)
     verbose && @info input_url
-    res = HTTP.get(input_url)
+    res = pubchem_get(input_url)
     if res.status == 200
         j = JSON3.read(String(res.body))::JSON3.Object
         cid = (j.PC_Compounds::JSON3.Array)[1].id.id.cid
         input_url2 = "$(PUG_VIEW_URL)/data/compound/$(cid)/JSON"
-        j2 = JSON3.read(String(HTTP.get(input_url2).body))::JSON3.Object
+        j2 = JSON3.read(String(pubchem_get(input_url2).body))::JSON3.Object
         return j, j2
     else
         error("Cannot Find record at $input_url.")
@@ -74,7 +83,7 @@ end
 function get_json_from_cid(cid; verbose = false)
     input_url = "$(PUG_URL)/compound/cid/$(cid)/record/JSON"
     verbose && @info input_url
-    res = HTTP.get(input_url)
+    res = pubchem_get(input_url)
     if res.status == 200
         return JSON3.read(String(res.body))
     else
@@ -232,7 +241,7 @@ end
 function get_chebi_id(csym)
     cid = get_cid(csym)
     input_url = "$PUG_VIEW_URL/data/compound/$cid/JSON/?heading=Biochemical+Reactions"
-    res = HTTP.get(input_url)
+    res = pubchem_get(input_url)
     j = JSON3.read(String(res.body))::JSON3.Object
     record = j[:Record]::JSON3.Object
     reference = record[:Reference]::JSON3.Array
